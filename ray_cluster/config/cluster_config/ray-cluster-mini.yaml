@@ -1,0 +1,52 @@
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  name: raycluster-mini
+spec:
+  rayVersion: '2.9.3'
+  headGroupSpec:
+    rayStartParams:
+      dashboard-host: '0.0.0.0'
+    template:
+      spec:
+        containers:
+        - name: ray-head
+          image: javierqt26/ray_py311_requirements
+          ports:
+          - containerPort: 6379
+            name: gcs
+          - containerPort: 8265
+            name: dashboard
+          - containerPort: 10001
+            name: client
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh","-c","ray stop"]
+          resources:
+            limits:
+              cpu: "2"
+              memory: "4G"
+            requests:
+              cpu: "2"
+              memory: "4G"
+  workerGroupSpecs:
+  - replicas: 2
+    groupName: ray-worker
+    rayStartParams: {}
+    template:
+      spec:
+        containers:
+        - name: ray-worker
+          image: javierqt26/ray_py311_requirements
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh","-c","ray stop"]
+          resources:
+            limits:
+              cpu: "2"
+              memory: "4G"
+            requests:
+              cpu: "2"
+              memory: "4G"
